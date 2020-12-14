@@ -36,6 +36,9 @@
     <StartupObject>Red4Assembler.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,11 +50,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FunctionDissembler.cs" />
+    <Compile Include="FunctionDissembler.Dissembly.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gibbed.RED4\projects\Gibbed.IO\Gibbed.IO.csproj">
@@ -69,6 +74,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)..\..\bin</PostBuildEvent>
+    <PostBuildEvent>mkdir $(ProjectDir)..\..\bin 2&gt; NUL
+copy $(TargetPath) $(ProjectDir)..\..\bin</PostBuildEvent>
   </PropertyGroup>
 </Project>
