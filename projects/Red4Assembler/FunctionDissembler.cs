@@ -52,7 +52,16 @@ namespace Red4Assembler {
             , Formatting.Indented, new JsonSerializerSettings {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             });
+
             System.IO.File.WriteAllText("Red4Assembler/debug/Dissemble.json", json);
+            System.IO.File.WriteAllText("Red4Assembler/debug/Dissemble.ws", string.Join("\n", functionBody));
+
+            // Fancy print store in file
+            {
+                // Indent by 1 tab
+                var lines = new List<string>(functionBody);
+                
+            }
 
             // 
             return sb.ToString();
@@ -111,16 +120,18 @@ namespace Red4Assembler {
                     continue;
                 }
 
-                Lines.Add(decompileOperation(state, instr));
+                Lines.Add(decompileOperation(ref state, instr, out bool wasProcessed) + ";");
 
-                state.currentIdx++;
+                if (!wasProcessed) {
+                    state.currentIdx++;
+                }
             }
 
             return Lines; // string.Join("\r\n", Lines);
         }
 
-        private delegate bool DOperationDecompiler(BodyParseState state, Instruction instr, out string operation);
-        private string decompileOperation(BodyParseState state, Instruction instr) {
+        private delegate bool DOperationDecompiler(ref BodyParseState state, Instruction instr, out string operation);
+        private string decompileOperation(ref BodyParseState state, Instruction instr, out bool processed) {
             var decompilers = new DOperationDecompiler[] {
                 this.decompileOperation_BaseTypes,
                 this.decompileOperation_Call,
@@ -129,15 +140,24 @@ namespace Red4Assembler {
                 this.decompileOperation_StringTypes,
             };
 
-            if (instr.Op == Opcode.NoOperation)
+
+            if (processed = (instr.Op == Opcode.NoOperation))
                 return "";
 
             foreach( var decom in decompilers ) {
-                if (decom(state, instr, out string operation)) 
+                if (processed = decom(ref state, instr, out string operation)) {
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine("decompileOperation: " + $"${state.currentIdx:X4}, {(byte)instr.Op:X2} - {instr.Op.ToString()}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+
                     return operation;
+                }
             }
 
-            return $"<${state.currentIdx:X}, UNPARSED, {instr.Op.ToString()}>;";
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("decompileOperation: " + $"${state.currentIdx:X4}, {(byte)instr.Op:X2} - {instr.Op.ToString()}");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            return $"<${state.currentIdx:X4}, UNPARSED, {(byte)instr.Op:X2} - {instr.Op.ToString()}>";
         }
 
 

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Red4Assembler {
     partial class FunctionDissembler {
-        private bool decompileOperation_StringTypes(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_StringTypes(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
@@ -21,8 +21,6 @@ namespace Red4Assembler {
                 break;
             }
 
-            
-
             return false;
         }
 
@@ -33,10 +31,10 @@ namespace Red4Assembler {
         /// <param name="instr"></param>
         /// <param name="operation"></param>
         /// <returns></returns>
-        private bool decompileOperation_Unknown_TODO(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_Unknown_TODO(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
-            switch(instr.Op) {
+            switch (instr.Op) {
             case Opcode.LoadTweakDBId:
                 // TODO: this - 1998-01-05
                 break;
@@ -49,11 +47,8 @@ namespace Red4Assembler {
             case Opcode.LoadConstantFalse:
                 // TODO: this - 1998-01-05
                 break;
-          
-            case Opcode.LoadParameter:
-                // TODO: this - 1998-01-05
-                break;
-       
+
+
             case Opcode.Switch:
                 // TODO: this - 1998-01-05
                 break;
@@ -70,9 +65,7 @@ namespace Red4Assembler {
             case Opcode.ReturnWithValue:
                 // TODO: this - 1998-01-05
                 break;
-            case Opcode.LoadProperty:
-                // TODO: this - 1998-01-05
-                break;
+
             case Opcode.AsObject:
                 // TODO: this - 1998-01-05
                 break;
@@ -88,26 +81,54 @@ namespace Red4Assembler {
         }
 
 
-        private bool decompileOperation_References(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_References(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
-            case Opcode.StoreRef:
-                // TODO: this - 1998-01-05
-                break;
-            case Opcode.RefLocal:
-                // TODO: this - 1998-01-05
-                break;
-            case Opcode.RefProperty:
-                // TODO: this - 1998-01-05
-                break;
+            case Opcode.StoreRef: {
+                    state.currentIdx++;
+
+                    var value = decompileOperation(ref state, state.instructions[state.currentIdx], out bool processedValue); // idx = 2, exit = 3
+                    var assignment = decompileOperation(ref state, state.instructions[state.currentIdx], out bool processedAssignment);
+
+                    operation = $"{value} = {assignment}";
+                    return true;
+                }
+
+            case Opcode.RefLocal: {
+                    // Get the var name through the arguments
+                    var arguments = ((ValueTuple<Gibbed.RED4.ScriptFormats.Definitions.LocalDefinition>)instr.Argument).Item1;
+                    operation = arguments.Name;
+                    state.currentIdx++;
+                    return true;
+                }
+
+            case Opcode.RefProperty: {
+                    // TODO: this - 1998-01-05
+                    break;
+                }
+
+            case Opcode.LoadParameter: {
+                    // Get the var name through the arguments
+                    var arguments = ((ValueTuple<Gibbed.RED4.ScriptFormats.Definitions.ParameterDefinition>)instr.Argument).Item1;
+                    operation = $"{arguments.Name}";
+                    state.currentIdx++;
+                    return true;
+                }
+
+            case Opcode.LoadProperty: {
+                    var arguments = ((ValueTuple<Gibbed.RED4.ScriptFormats.Definitions.PropertyDefinition>)instr.Argument).Item1;
+                    string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedNextInstruction);
+
+                    operation = nextInstrDecl + "." + arguments.Name;
+                    return true;
+                }
             }
 
             return false;
         }
 
-
-        private bool decompileOperation_Call(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_Call(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             var info = OpcodeInfo.Get(instr.Op);
@@ -132,37 +153,41 @@ namespace Red4Assembler {
             return false;
         }
 
-        private bool decompileOperation_Template(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_Template(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
-           
+
             }
 
             return false;
         }
 
-        private bool decompileOperation_Constants(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_Constants(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
             case Opcode.LoadConstantOne:
                 operation = "1";
+                state.currentIdx++;
                 return true;
             case Opcode.LoadConstantZero:
                 operation = "0";
+                state.currentIdx++;
                 return true;
             case Opcode.LoadConstantTrue:
                 operation = "true";
+                state.currentIdx++;
                 return true;
             case Opcode.LoadConstantFalse:
                 operation = "false";
+                state.currentIdx++;
                 return true;
             }
             return false;
         }
 
-        private bool decompileOperation_BaseTypes(BodyParseState state, Instruction instr, out string operation) {
+        private bool decompileOperation_BaseTypes(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
@@ -190,9 +215,11 @@ namespace Red4Assembler {
             case Opcode.LoadUint64:
                 // TODO: this - 1998-01-05
                 break;
-            case Opcode.LoadFloat:
-                // TODO: this - 1998-01-05
-                break;
+            case Opcode.LoadFloat: {
+                    operation = instr.Argument.ToString();
+                    state.currentIdx++;
+                    return true;
+                }
             case Opcode.LoadDouble:
                 // TODO: this - 1998-01-05
                 break;
