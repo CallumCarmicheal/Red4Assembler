@@ -157,7 +157,7 @@ namespace Red4Assembler {
             operation = "";
 
             switch (instr.Op) {
-
+            //
             }
 
             return false;
@@ -191,45 +191,28 @@ namespace Red4Assembler {
             operation = "";
 
             switch (instr.Op) {
+            // Note I've only tested LoadFloat, I assume all the base type primitives are the same.
             case Opcode.LoadInt8:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadInt16:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadInt32:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadInt64:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadUint8:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadUint16:
-                // TODO: this - 1998-01-05
-                break;
             case Opcode.LoadUint32:
-                // TODO: this - 1998-01-05
-                break;
+            case Opcode.LoadDouble:
             case Opcode.LoadUint64:
-                // TODO: this - 1998-01-05
-                break;
+            case Opcode.LoadString:
             case Opcode.LoadFloat: {
                     operation = instr.Argument.ToString();
                     state.currentIdx++;
                     return true;
                 }
-            case Opcode.LoadDouble:
-                // TODO: this - 1998-01-05
-                break;
+
+            // I assume this will be a string, I'll get around to implementing it when I get a function using it.
             case Opcode.LoadName:
                 // TODO: this - 1998-01-05
                 break;
             case Opcode.LoadEnumeral:
-                // TODO: this - 1998-01-05
-                break;
-            case Opcode.LoadString:
                 // TODO: this - 1998-01-05
                 break;
             }
