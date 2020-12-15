@@ -54,17 +54,18 @@ namespace Red4Assembler {
             });
 
             System.IO.File.WriteAllText("Red4Assembler/debug/Dissemble.json", json);
-            System.IO.File.WriteAllText("Red4Assembler/debug/Dissemble.ws", string.Join("\n", functionBody));
 
             // Fancy print store in file
             {
                 // Indent by 1 tab
-                var lines = new List<string>(functionBody);
-                
-            }
+                var lines = functionBody.Select(s => "\t" + s).ToList();
 
-            // 
-            return sb.ToString();
+                var functionString = functionSignature + " {\n";
+                functionString += string.Join("\n", lines);
+                functionString += "\n}";
+
+                return functionString;
+            }
         }
 
         private string generateFunctionSignature(FunctionDefinition fnDef) {
@@ -108,7 +109,6 @@ namespace Red4Assembler {
             };
 
             List<string> Lines = new List<string>();
-
             Instruction[] instructions = definition.Body;
 
             bool parse = true;
@@ -122,9 +122,8 @@ namespace Red4Assembler {
 
                 Lines.Add(decompileOperation(ref state, instr, out bool wasProcessed) + ";");
 
-                if (!wasProcessed) {
+                if (!wasProcessed) 
                     state.currentIdx++;
-                }
             }
 
             return Lines; // string.Join("\r\n", Lines);
@@ -133,11 +132,12 @@ namespace Red4Assembler {
         private delegate bool DOperationDecompiler(ref BodyParseState state, Instruction instr, out string operation);
         private string decompileOperation(ref BodyParseState state, Instruction instr, out bool processed) {
             var decompilers = new DOperationDecompiler[] {
-                this.decompileOperation_BaseTypes,
-                this.decompileOperation_Call,
-                this.decompileOperation_Constants,
-                this.decompileOperation_References,
-                this.decompileOperation_StringTypes,
+                decompileOperation_BaseTypes,
+                decompileOperation_Call,
+                decompileOperation_Constants,
+                decompileOperation_References,
+                decompileOperation_StringTypes,
+                decompileOperation_Unknown
             };
 
 

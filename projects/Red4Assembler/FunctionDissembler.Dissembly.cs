@@ -62,13 +62,10 @@ namespace Red4Assembler {
             case Opcode.Construct:
                 // TODO: this - 1998-01-05
                 break;
-            case Opcode.ReturnWithValue:
-                // TODO: this - 1998-01-05
-                break;
+           
+           
 
-            case Opcode.AsObject:
-                // TODO: this - 1998-01-05
-                break;
+
             case Opcode.CompareEqual:
                 // TODO: this - 1998-01-05
                 break;
@@ -87,9 +84,13 @@ namespace Red4Assembler {
             switch (instr.Op) {
             case Opcode.StoreRef: {
                     state.currentIdx++;
+                    bool processedOpCode = false;
 
-                    var value = decompileOperation(ref state, state.instructions[state.currentIdx], out bool processedValue); // idx = 2, exit = 3
-                    var assignment = decompileOperation(ref state, state.instructions[state.currentIdx], out bool processedAssignment);
+                    var value = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode); 
+                    if (!processedOpCode) state.currentIdx++; // if the opcode is not implemented make sure we still skip it.
+
+                    var assignment = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode);
+                    if (!processedOpCode) state.currentIdx++; // if the opcode is not implemented make sure we still skip it.
 
                     operation = $"{value} = {assignment}";
                     return true;
@@ -118,7 +119,10 @@ namespace Red4Assembler {
 
             case Opcode.LoadProperty: {
                     var arguments = ((ValueTuple<Gibbed.RED4.ScriptFormats.Definitions.PropertyDefinition>)instr.Argument).Item1;
-                    string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedNextInstruction);
+                    string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedOpCode);
+
+                    if (!processedOpCode) // if the opcode is not implemented make sure we still skip it.
+                        state.currentIdx++;
 
                     operation = nextInstrDecl + "." + arguments.Name;
                     return true;
@@ -130,13 +134,47 @@ namespace Red4Assembler {
 
         private bool decompileOperation_Call(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
-
-            var info = OpcodeInfo.Get(instr.Op);
-
+            
             switch (instr.Op) {
-            case Opcode.Call:
-                // TODO: this - 1998-01-05
-                break;
+            case Opcode.Call: {
+                    (_, _, var fn) = ((short, ushort, FunctionDefinition))instr.Argument;
+
+                    if (fn.Parameters == null || fn.Parameters.Length == 0) {
+                        operation = $"{fn.Name}()";
+                        state.currentIdx++;
+
+                        if (state.instructions[state.currentIdx].Op == Opcode.EndCall)
+                            state.currentIdx++;
+
+                        return true;
+                    }
+
+                    // TODO: this - 1998-01-05
+                    break;
+                }
+            case Opcode.AsObject: {
+                    // I am expecting the following pattern
+                    //    AsObject, LoadParamter, Call, ..., EndCall.
+                    // This is a basic implementation and is expected to be overriden with a better solution.
+                    //  this is a hard coded solution for the signature above.
+                    var idx = state.currentIdx;
+                    if (state.instructions[idx + 1].Op == Opcode.LoadParameter
+                          && state.instructions[idx + 2].Op == Opcode.Call) {
+                        bool processedOpCode = false;
+                        state.currentIdx = idx + 1; // Get the parameter
+
+                        var parameter = decompileOperation(ref state, state.instructions[idx + 1], out processedOpCode);
+                        if (!processedOpCode) state.currentIdx++; // if the opcode is not implemented make sure we still skip it.
+
+                        var callFn = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode);
+                        if (!processedOpCode) state.currentIdx++; // if the opcode is not implemented make sure we still skip it.
+
+                        operation = $"{parameter}.{callFn}";
+                        return true;
+                    }
+
+                    break;
+                }
             case Opcode.NativeCall:
                 // TODO: this - 1998-01-05
                 break;
@@ -149,7 +187,34 @@ namespace Red4Assembler {
             case Opcode.JumpFalse:
                 // TODO: this - 1998-01-05
                 break;
+
+            case Opcode.ReturnWithValue: {
+                    string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedOpCode);
+
+                    if (!processedOpCode) // if the opcode is not implemented make sure we still skip it.
+                        state.currentIdx++;
+
+                    operation = $"return {nextInstrDecl}";
+                    state.currentIdx++;
+                    return true;
+                }
             }
+            return false;
+        }
+
+        private bool decompileOperation_Unknown(ref BodyParseState state, Instruction instr, out string operation) {
+            operation = "";
+
+            switch ((byte)instr.Op) {
+            case 0x51: {
+                    int currentIdx = state.currentIdx;
+                    string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedOpCode);
+                    
+                    operation = $"<$UNK_OP_x51u ({currentIdx})>(${nextInstrDecl})";
+                    return true;
+                }
+            }
+
             return false;
         }
 

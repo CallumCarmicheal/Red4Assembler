@@ -21,7 +21,7 @@ git clone --recurse-submodules -j8 https://github.com/CallumCarmicheal/Red4Assem
 3. Build all projects.
 4. Open `projects\Red4Assembler\bin\{Debug|Release}`
 5. Launch `Red4Assembler.exe` with the path to `Cyberpunk 2077\r6\cache\final.redscripts` or Copy `final.redscripts` into the current folder and just run `Red4Assembler.exe`.
-6. Open the folder `projects\Red4Assembler\bin\{Debug|Release}\Red4Assembler\debug` to see the output.
+6. Open the folder `projects\Red4Assembler\bin\{Debug|Release}\Red4Assembler` to see the output.
 
 # Contributing
 

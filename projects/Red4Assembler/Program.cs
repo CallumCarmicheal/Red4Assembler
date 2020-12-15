@@ -37,6 +37,7 @@ namespace Red4Assembler {
     class Program {
         static void Main(string[] args) {
             System.IO.Directory.CreateDirectory("Red4Assembler/debug");
+            System.IO.Directory.CreateDirectory("Red4Assembler/tests");
 
             var scriptFile = "final.redscripts";
 
@@ -55,11 +56,14 @@ namespace Red4Assembler {
                     .OfType<FunctionDefinition>()
                     .Where(t => t.Flags.HasFlag(FunctionFlags.HasBody))
                     .OrderBy(f => f.SourceFile?.Path)
-                    .ThenBy(f => f.SourceLine);
+                    .ThenBy(f => f.SourceLine)
+                    .ToArray();
 
             var dism = new FunctionDissembler();
-            string script = dism.Dissemble(functionBodyScripts.First());
-            File.WriteAllText("Red4Assembler.output_test.txt", script);
+            System.IO.File.WriteAllText("Red4Assembler/tests/GetActionAnimationSlideParams.non_ref.ws", dism.Dissemble(functionBodyScripts[0]));
+            System.IO.File.WriteAllText("Red4Assembler/tests/GetActionAnimationSlideParams.ref_param.ws", dism.Dissemble(functionBodyScripts[1]));
+
+            // Console.ReadLine();
         }
     }
 }
