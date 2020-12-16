@@ -109,10 +109,10 @@ namespace Red4Assembler {
             };
 
             List<string> Lines = new List<string>();
-            Instruction[] instructions = definition.Body;
+            List<Instruction> instructions = definition.Body;
 
             bool parse = true;
-            while (state.currentIdx < instructions.Length && parse) {
+            while (state.currentIdx < instructions.Count && parse) {
                 var instr = instructions[state.currentIdx];
 
                 if (instr.Op == Opcode.NoOperation) {
@@ -163,7 +163,7 @@ namespace Red4Assembler {
 
         private class BodyParseState {
             public int currentIdx = 0;
-            public Instruction[] instructions;
+            public List<Instruction> instructions;
             public FunctionDefinition fnDefinition;
         }
     }

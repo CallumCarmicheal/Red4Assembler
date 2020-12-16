@@ -59,11 +59,11 @@ namespace Red4Assembler {
                 // TODO: this - 1998-01-05
                 break;
 
-            case Opcode.Construct:
+            case Opcode.Construct: // new CLASS(Arguments)
                 // TODO: this - 1998-01-05
                 break;
-           
-           
+
+
 
 
             case Opcode.CompareEqual:
@@ -84,9 +84,9 @@ namespace Red4Assembler {
             switch (instr.Op) {
             case Opcode.StoreRef: {
                     state.currentIdx++;
-                    bool processedOpCode = false;
 
-                    var value = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode); 
+                    bool processedOpCode;
+                    var value = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode);
                     if (!processedOpCode) state.currentIdx++; // if the opcode is not implemented make sure we still skip it.
 
                     var assignment = decompileOperation(ref state, state.instructions[state.currentIdx], out processedOpCode);
@@ -134,12 +134,12 @@ namespace Red4Assembler {
 
         private bool decompileOperation_Call(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
-            
+
             switch (instr.Op) {
             case Opcode.Call: {
                     (_, _, var fn) = ((short, ushort, FunctionDefinition))instr.Argument;
 
-                    if (fn.Parameters == null || fn.Parameters.Length == 0) {
+                    if (fn.Parameters == null || fn.Parameters.Count == 0) {
                         operation = $"{fn.Name}()";
                         state.currentIdx++;
 
@@ -175,7 +175,7 @@ namespace Red4Assembler {
 
                     break;
                 }
-            case Opcode.NativeCall:
+            case Opcode.CallName:
                 // TODO: this - 1998-01-05
                 break;
             case Opcode.EndCall:
@@ -209,7 +209,7 @@ namespace Red4Assembler {
             case 0x51: {
                     int currentIdx = state.currentIdx;
                     string nextInstrDecl = decompileOperation(ref state, state.instructions[++state.currentIdx], out bool processedOpCode);
-                    
+
                     operation = $"<$UNK_OP_x51u ({currentIdx})>(${nextInstrDecl})";
                     return true;
                 }
@@ -218,11 +218,57 @@ namespace Red4Assembler {
             return false;
         }
 
+        /// <summary>
+        /// A function to let intellisense autofill the misisng opcodes (when ever they are added or modified)
+        /// this function is also used to keep track of what is implemented.
+        ///   Later this will be moved into its own file, for now its here.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="instr"></param>
+        /// <param name="operation"></param>
+        /// <returns></returns>
         private bool decompileOperation_Template(ref BodyParseState state, Instruction instr, out string operation) {
             operation = "";
 
             switch (instr.Op) {
-            //
+            case Opcode.NoOperation: break;                 //  -
+            case Opcode.LoadConstantOne: break;             //  -
+            case Opcode.LoadConstantZero: break;            //  -
+            case Opcode.LoadInt8: break;                    //  -
+            case Opcode.LoadInt16: break;                   //  -
+            case Opcode.LoadInt32: break;                   //  -
+            case Opcode.LoadInt64: break;                   //  -
+            case Opcode.LoadUint8: break;                   //  -
+            case Opcode.LoadUint16: break;                  //  -
+            case Opcode.LoadUint32: break;                  //  -
+            case Opcode.LoadUint64: break;                  //  -
+            case Opcode.LoadFloat: break;                   //  -
+            case Opcode.LoadDouble: break;                  //  -
+            case Opcode.LoadName: break;                    //
+            case Opcode.LoadEnumeral: break;                //
+            case Opcode.LoadString: break;                  //
+            case Opcode.LoadTweakDBId: break;               //
+            case Opcode.LoadResource: break;                //  
+            case Opcode.LoadConstantTrue: break;            //  -
+            case Opcode.LoadConstantFalse: break;           //  -
+            case Opcode.StoreRef: break;                    //  
+            case Opcode.RefLocal: break;                    //
+            case Opcode.LoadParameter: break;               //
+            case Opcode.RefProperty: break;                 //  
+            case Opcode.Switch: break;                      //  NOT
+            case Opcode.SwitchCase: break;                  //  NOT
+            case Opcode.SwitchDefault: break;               //  NOT
+            case Opcode.Jump: break;                        //  NOT
+            case Opcode.JumpFalse: break;                   //  NOT
+            case Opcode.Construct: break;                   //  NOT
+            case Opcode.Call: break;                        //  PARTIALLY
+            case Opcode.CallName: break;                    //  NOT
+            case Opcode.EndCall: break;                     //  NOT
+            case Opcode.ReturnWithValue: break;             //  
+            case Opcode.LoadProperty: break;                //  
+            case Opcode.AsObject: break;                    //
+            case Opcode.CompareEqual: break;                //  NOT 
+            case Opcode.CompareNotEqual: break;             //  NOT
             }
 
             return false;
