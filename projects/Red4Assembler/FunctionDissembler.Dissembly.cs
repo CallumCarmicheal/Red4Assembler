@@ -276,6 +276,9 @@ namespace Red4Assembler {
             // I assume this will be a string, I'll get around to implementing it when I get a function using it.
             case Opcode.LoadName:
                 // TODO: this - 1998-01-05
+                // Do something like this:
+                //   &{ObjectHere}
+                // I believe that LoadName creates a reference to a class.
                 break;
             case Opcode.LoadEnumeral:
                 // TODO: this - 1998-01-05
